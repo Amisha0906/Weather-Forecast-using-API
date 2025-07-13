@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Weather Dashboard</title>
+    <style>
+        body { font-family: Arial; margin: 20px; }
+        .forecast-table, .hourly-table { display: flex; overflow-x: auto; }
+        .forecast-day, .hourly-hour { border: 1px solid #ccc; padding: 10px; min-width: 150px; text-align: center; }
+        .weather-box { border: 1px solid #999; padding: 15px; width: 300px; margin-bottom: 20px; }
+        button { margin-top: 10px; }
+    </style>
+    <script>
+        function showHourly(index) {
+            document.querySelectorAll('.hourly-container').forEach(e => e.style.display = 'none');
+            document.getElementById('hourly-' + index).style.display = 'flex';
+        }
+    </script>
+</head>
+<body>
+
+<h2>Weather Forecast Dashboard</h2>
+
+<form method="POST">
+    <input type="text" name="city" placeholder="Enter city name" required value="{{ city }}">
+    <button type="submit">Get Forecast</button>
+</form>
+
+{% if forecast %}
+    <div class="weather-box">
+        <h3>Current Weather in {{ forecast.location.name }}</h3>
+        <p><b>Time:</b> {{ forecast.location.localtime }}</p>
+        <p><b>Temperature:</b> {{ forecast.current.temp_c }}°C</p>
+        <p><b>Condition:</b> {{ forecast.current.condition.text }}</p>
+        <img src="https:{{ forecast.current.condition.icon }}" alt="icon">
+    </div>
+
+    <div class="forecast-table">
+        {% for day in forecast.forecast.forecastday %}
+        <div class="forecast-day">
+            <h4>{{ day.date }}</h4>
+            <p><b>Avg Temp:</b> {{ day.day.avgtemp_c }}°C</p>
+            <p><b>Humidity:</b> {{ day.day.avghumidity }}%</p>
+            <p><b>UV:</b> {{ day.day.uv }}</p>
+            <p><b>Condition:</b> {{ day.day.condition.text }}</p>
+            <img src="https:{{ day.day.condition.icon }}" alt="icon"><br>
+            <button onclick="showHourly({{ loop.index0 }})">Hourly Data</button>
+        </div>
+        {% endfor %}
+    </div>
+
+    {% for day in forecast.forecast.forecastday %}
+    <div class="hourly-container" id="hourly-{{ loop.index0 }}" style="display: none; margin-top: 20px;">
+        <div class="hourly-table">
+            {% for hour in day.hour %}
+            <div class="hourly-hour">
+                <p><b>{{ hour.time[-5:] }}</b></p>
+                <p>{{ hour.condition.text }}</p>
+                <p>Temp: {{ hour.temp_c }}°C</p>
+                <p>Humidity: {{ hour.humidity }}%</p>
+                <p>UV: {{ hour.uv }}</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endfor %}
+{% endif %}
+
+</body>
+</html>
